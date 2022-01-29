@@ -95,4 +95,15 @@ class App {
   }
 
   renderWorkoutMarker(workout) {}
+
+  //Storing the workouts data in localStorage
+  _setLocalStorage() {
+    //The first argument is the key or name and the second argument needs to be a string that we want to store and which will be associated with the key and need a simple value which must also be a string, we can convert an object to string by using JSON.stringify()
+    localStorage.setItem('workouts', JSON.stringify(this.#workouts));
+  }
+
+  //JSON.parse converts the string to objects
+  _getLocalStorage() {
+    const data = JSON.parse(localStorage.getItem('workouts'));
+  }
 }

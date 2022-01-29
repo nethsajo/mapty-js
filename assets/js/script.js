@@ -60,12 +60,15 @@ class Cycling extends Workout {
 //Application Architecture
 
 const form = document.querySelector('.form');
+const containerWorkout = document.querySelector('.workout');
 const containerWorkouts = document.querySelector('.workouts');
 const inputType = document.querySelector('.form__input--type');
 const inputDistance = document.querySelector('.form__input--distance');
 const inputDuration = document.querySelector('.form__input--duration');
 const inputCadence = document.querySelector('.form__input--cadence');
 const inputElevation = document.querySelector('.form__input--elevation');
+const sidebar = document.querySelector('.sidebar');
+const workMenuActions = document.querySelector('.workout__menu-actions');
 
 class App {
   #map;
@@ -76,11 +79,14 @@ class App {
   constructor() {
     this._getPosition();
 
+    //Get data from local storage
+    this._getLocalStorage();
+
+    //Attach event handlers
     form.addEventListener('submit', this._newWorkout.bind(this));
-
     inputType.addEventListener('change', this._toggleElevationField);
-
     containerWorkouts.addEventListener('click', this._moveToPopup.bind(this));
+    sidebar.addEventListener('click', this._toggleMenuActions);
   }
 
   _getPosition() {
@@ -95,9 +101,9 @@ class App {
   }
 
   _loadMap(position) {
-    console.log(this);
+    // console.log(this);
     const { latitude, longitude } = position.coords;
-    console.log(`https://www.google.com/maps/@${latitude},${longitude}`);
+    // console.log(`https://www.google.com/maps/@${latitude},${longitude}`);
 
     const coords = [latitude, longitude];
     this.#map = L.map('map').setView(coords, this.#mapZoomLevel);
@@ -110,6 +116,10 @@ class App {
 
     //Handling clicks on map
     this.#map.on('click', this._showForm.bind(this));
+
+    this.#workouts.forEach(workout => {
+      this._renderWorkoutMarker(workout);
+    });
   }
 
   _showForm(mapE) {
@@ -196,6 +206,9 @@ class App {
 
     //Hide form + clear input fields
     this._hideForm();
+
+    //Set local storage to all workouts
+    this._setLocalStorage();
   }
 
   _renderWorkoutMarker(workout) {
@@ -219,7 +232,28 @@ class App {
   _renderWorkout(workout) {
     const html = `
       <li class="workout workout--${workout.type}" data-id="${workout.id}">
+        <div class="workout__menu-actions workout__menu-hidden">
+          <ul class="workout__menus">
+            <li class="workout__menu-item workout--delete">
+              <svg class="workout__item-icon">
+                <use xlink:href="./assets/icons/sprite.svg#icon-edit"></use>
+              </svg>
+              <span>Edit</span>
+            </li>
+            <li class="workout__menu-item workout--delete">
+              <svg class="workout__item-icon">
+                <use xlink:href="./assets/icons/sprite.svg#icon-trash"></use>
+              </svg>
+              <span>Delete</span>
+            </li>
+          </ul>
+        </div>
         <h2 class="workout__title">${workout.description}</h2>
+        <svg class="workout__menu-icon">
+          <use
+            xlink:href="./assets/icons/sprite.svg#icon-dots-three-horizontal"
+          ></use>
+        </svg>
         <div class="workout__details">
           <span class="workout__icon">${
             workout.type === 'running' ? '🏃‍♂️' : '🚴‍♀️'
@@ -278,7 +312,47 @@ class App {
     });
 
     //using the public interface
-    workout.click();
+    // workout.click();
+  }
+
+  _toggleMenuActions(e) {
+    const clicked = e.target;
+
+    if (clicked.tagName !== 'svg' && clicked.tagName !== 'use') return;
+    const menu = e.target
+      .closest('.workout')
+      .querySelector('.workout__menu-actions');
+
+    const menus = sidebar.querySelectorAll('.workout__menu-actions');
+
+    menus.forEach(menu => {
+      menu.classList.add('workout__menu-hidden');
+    });
+
+    menu.style.display = 'block';
+    menu.classList.remove('workout__menu-hidden');
+  }
+
+  _setLocalStorage() {
+    localStorage.setItem('workouts', JSON.stringify(this.#workouts));
+  }
+
+  _getLocalStorage() {
+    const data = JSON.parse(localStorage.getItem('workouts'));
+    // console.log(data);
+
+    if (!data) return;
+
+    this.#workouts = data;
+
+    this.#workouts.forEach(workout => {
+      this._renderWorkout(workout);
+    });
+  }
+
+  reset() {
+    localStorage.removeItem('workouts');
+    location.reload();
   }
 }
 
