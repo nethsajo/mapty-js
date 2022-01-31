@@ -76,6 +76,7 @@ class App {
   #mapEvent;
   #mapZoomLevel = 15;
   #workouts = [];
+  #sorted = false;
 
   constructor() {
     this._getPosition();
@@ -216,14 +217,15 @@ class App {
     this._hideForm();
 
     //Set local storage to all workouts
-    this._setLocalStorage();
+    this._setLocalStorage(this.#workouts);
   }
 
   _renderWorkoutMarker(workout) {
     const icon = new L.Icon.Default();
     icon.options.shadowSize = [0, 0];
+    icon.options.iconSize = [20, 35];
 
-    L.marker(workout.coords, { icon })
+    L.marker(workout.coords, { icon: icon })
       .addTo(this.#map)
       .bindPopup(
         L.popup({
@@ -353,8 +355,8 @@ class App {
     this._hideMenu();
   }
 
-  _setLocalStorage() {
-    localStorage.setItem('workouts', JSON.stringify(this.#workouts));
+  _setLocalStorage(workouts) {
+    localStorage.setItem('workouts', JSON.stringify(workouts));
   }
 
   _getLocalStorage() {
