@@ -69,7 +69,7 @@ const inputCadence = document.querySelector('.form__input--cadence');
 const inputElevation = document.querySelector('.form__input--elevation');
 const sidebar = document.querySelector('.sidebar');
 const logo = document.querySelector('.logo');
-const workMenuActions = document.querySelector('.workout__menu-actions');
+const action = document.querySelector('.action');
 
 class App {
   #map;
@@ -87,8 +87,13 @@ class App {
     form.addEventListener('submit', this._newWorkout.bind(this));
     inputType.addEventListener('change', this._toggleElevationField);
     containerWorkouts.addEventListener('click', this._moveToPopup.bind(this));
-    this._addHideMenu();
+    //Hide menu
+    sidebar.addEventListener('click', this._hideMenuClick.bind(this));
+
+    //Toggle menu
     sidebar.addEventListener('click', this._toggleMenuActions);
+
+    action.addEventListener('click', this._deleteWorkouts.bind(this));
   }
 
   _getPosition() {
@@ -197,7 +202,7 @@ class App {
 
     //Add new object to workout array
     this.#workouts.push(workout);
-    console.log(workout);
+    // console.log(workout);
 
     //Render workout on map as marker
     //Pass the workout object
@@ -288,7 +293,6 @@ class App {
     `;
 
     form.insertAdjacentHTML('afterend', html);
-    this._addSortDelete();
   }
 
   _moveToPopup(e) {
@@ -312,39 +316,8 @@ class App {
     // workout.click();
   }
 
-  _addSortDelete() {
-    const html = `
-      <div class="action">
-        <button class="action__btn action--sort">
-          <svg class="action__icon">
-            <use
-              xlink:href="./assets/icons/sprite.svg#icon-select-arrows"
-            ></use>
-          </svg>
-          <span class="action__name">Sort</span>
-        </button>
-        <button class="action__btn action--delete-all">
-          <svg class="action__icon">
-            <use xlink:href="./assets/icons/sprite.svg#icon-trash"></use>
-          </svg>
-          <span class="action__name">Delete all</span>
-        </button>
-      </div>
-    `;
-
-    if (!this.#workouts.length) return;
-
-    logo.insertAdjacentHTML('afterend', html);
-  }
-
-  _addHideMenu() {
-    sidebar.addEventListener('click', this._hideMenuClick.bind(this));
-  }
-
   _toggleMenuActions(e) {
-    const clicked = e.target;
-
-    if (clicked.tagName !== 'svg' && clicked.tagName !== 'use') return;
+    if (!e.target.classList.contains('workout__menu-icon')) return;
     const menu = e.target
       .closest('.workout')
       .querySelector('.workout__menu-actions');
@@ -393,9 +366,19 @@ class App {
     });
   }
 
-  reset() {
+  _deleteWorkouts(e) {
+    const clicked = e.target.closest('.action--delete-all');
+
+    if (!clicked) return;
+
     localStorage.removeItem('workouts');
-    location.reload();
+    this._removeWorkoutList();
+  }
+
+  _removeWorkoutList() {
+    const workouts = document.querySelectorAll('.workout');
+
+    workouts.forEach(work => (work.style.display = 'none'));
   }
 }
 
