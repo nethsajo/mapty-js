@@ -68,6 +68,7 @@ const inputDuration = document.querySelector('.form__input--duration');
 const inputCadence = document.querySelector('.form__input--cadence');
 const inputElevation = document.querySelector('.form__input--elevation');
 const sidebar = document.querySelector('.sidebar');
+const logo = document.querySelector('.logo');
 const workMenuActions = document.querySelector('.workout__menu-actions');
 
 class App {
@@ -86,6 +87,7 @@ class App {
     form.addEventListener('submit', this._newWorkout.bind(this));
     inputType.addEventListener('change', this._toggleElevationField);
     containerWorkouts.addEventListener('click', this._moveToPopup.bind(this));
+    this._addHideMenu();
     sidebar.addEventListener('click', this._toggleMenuActions);
   }
 
@@ -236,12 +238,6 @@ class App {
           <ul class="workout__menus">
             <li class="workout__menu-item workout--delete">
               <svg class="workout__item-icon">
-                <use xlink:href="./assets/icons/sprite.svg#icon-edit"></use>
-              </svg>
-              <span>Edit</span>
-            </li>
-            <li class="workout__menu-item workout--delete">
-              <svg class="workout__item-icon">
                 <use xlink:href="./assets/icons/sprite.svg#icon-trash"></use>
               </svg>
               <span>Delete</span>
@@ -292,6 +288,7 @@ class App {
     `;
 
     form.insertAdjacentHTML('afterend', html);
+    this._addSortDelete();
   }
 
   _moveToPopup(e) {
@@ -315,6 +312,35 @@ class App {
     // workout.click();
   }
 
+  _addSortDelete() {
+    const html = `
+      <div class="action">
+        <button class="action__btn action--sort">
+          <svg class="action__icon">
+            <use
+              xlink:href="./assets/icons/sprite.svg#icon-select-arrows"
+            ></use>
+          </svg>
+          <span class="action__name">Sort</span>
+        </button>
+        <button class="action__btn action--delete-all">
+          <svg class="action__icon">
+            <use xlink:href="./assets/icons/sprite.svg#icon-trash"></use>
+          </svg>
+          <span class="action__name">Delete all</span>
+        </button>
+      </div>
+    `;
+
+    if (!this.#workouts.length) return;
+
+    logo.insertAdjacentHTML('afterend', html);
+  }
+
+  _addHideMenu() {
+    sidebar.addEventListener('click', this._hideMenuClick.bind(this));
+  }
+
   _toggleMenuActions(e) {
     const clicked = e.target;
 
@@ -323,14 +349,31 @@ class App {
       .closest('.workout')
       .querySelector('.workout__menu-actions');
 
-    const menus = sidebar.querySelectorAll('.workout__menu-actions');
-
-    menus.forEach(menu => {
-      menu.classList.add('workout__menu-hidden');
-    });
-
     menu.style.display = 'block';
     menu.classList.remove('workout__menu-hidden');
+  }
+
+  _hideMenu() {
+    const menus = document.querySelectorAll('.workout__menu-actions');
+
+    menus.forEach(menu => {
+      if (menu.classList.contains('workout__menu-hidden')) return;
+      menu.classList.add('workout__menu-hidden');
+      menu.style.display = 'none';
+    });
+  }
+
+  _hideMenuClick(e) {
+    const menus = Array.from(
+      document.querySelectorAll('.workout__menu-actions')
+    );
+    const isHidden = menus.every(menu =>
+      menu.classList.contains('workout__menu-hidden')
+    );
+
+    if (e.target.closest('.workout__menu-item') !== null || isHidden) return;
+
+    this._hideMenu();
   }
 
   _setLocalStorage() {
