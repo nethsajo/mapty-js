@@ -113,6 +113,7 @@ class App {
     // console.log(`https://www.google.com/maps/@${latitude},${longitude}`);
 
     const coords = [latitude, longitude];
+
     this.#map = L.map('map').setView(coords, this.#mapZoomLevel);
     // console.log(map);
 
@@ -219,7 +220,10 @@ class App {
   }
 
   _renderWorkoutMarker(workout) {
-    L.marker(workout.coords)
+    const icon = new L.Icon.Default();
+    icon.options.shadowSize = [0, 0];
+
+    L.marker(workout.coords, { icon })
       .addTo(this.#map)
       .bindPopup(
         L.popup({
@@ -377,8 +381,12 @@ class App {
 
   _removeWorkoutList() {
     const workouts = document.querySelectorAll('.workout');
+    const popup = document.querySelectorAll('.leaflet-popup');
+    const marker = document.querySelectorAll('.leaflet-marker-icon');
 
     workouts.forEach(work => (work.style.display = 'none'));
+    popup.forEach(popup => (popup.style.display = 'none'));
+    marker.forEach(marker => (marker.style.display = 'none'));
   }
 }
 
